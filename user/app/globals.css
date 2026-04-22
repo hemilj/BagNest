@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafafa;
+  --foreground: #111111;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-playfair: var(--font-playfair);
+  --font-montserrat: var(--font-montserrat);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.bg-mesh-gradient {
+  background-color: #030014;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.5), transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(20, 184, 166, 0.5), transparent 45%),
+    radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.4), transparent 50%);
+  background-size: 200% 200%;
+  animation: meshFlow 15s ease infinite alternate;
+}
+
+@keyframes meshFlow {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 50% 100%; }
+}
+
+.glass-card {
+  background: rgba(10, 10, 10, 0.45);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
+}
