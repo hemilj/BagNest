@@ -7,7 +7,7 @@ const Product = require('../models/Product');
 // @access Private
 const createOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, itemsPrice, shippingPrice, totalPrice } = req.body;
+    const { items, shippingAddress, paymentMethod, itemsPrice, shippingPrice, totalPrice, isPaid, paidAt } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
@@ -32,6 +32,8 @@ const createOrder = async (req, res) => {
       itemsPrice,
       shippingPrice: shippingPrice || 0,
       totalPrice,
+      isPaid: isPaid || false,
+      paidAt: paidAt || null,
     });
 
     // Clear cart after order

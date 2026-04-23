@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import API from '../../lib/axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Script from 'next/script';
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -17,7 +18,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressLoading, setAddressLoading] = useState(false);
 
@@ -36,7 +37,7 @@ export default function CheckoutPage() {
             }
           });
           setSavedAddresses(Array.from(addressMap.values()));
-        } catch (err) {}
+        } catch (err) { }
         finally { setAddressLoading(false); }
       };
       fetchAddresses();
@@ -59,19 +60,59 @@ export default function CheckoutPage() {
         qty: i.qty,
         image: i.product.images?.[0] || '',
       }));
-      const { data } = await API.post('/orders', {
+
+      const orderData = {
         items,
         shippingAddress: form,
         paymentMethod,
         itemsPrice: cartTotal,
         shippingPrice: shipping,
         totalPrice: total,
-      });
-      await clearCart();
-      router.push(`/profile?tab=orders&success=${data._id}`);
+      };
+
+      if (paymentMethod === 'Online') {
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: total * 100,
+          currency: "INR",
+          name: "BagNest Store",
+          description: "Bag Purchase",
+          handler: async (response) => {
+            try {
+              const { data } = await API.post('/orders', {
+                ...orderData,
+                isPaid: true,
+                paidAt: new Date(),
+              });
+              await clearCart();
+              router.push(`/profile?tab=orders&success=${data._id}`);
+            } catch (err) {
+              setError(err.response?.data?.message || 'Order failed after payment. Please contact support.');
+            } finally {
+              setPlacing(false);
+            }
+          },
+          prefill: {
+            name: form.name,
+            contact: form.phone,
+          },
+          theme: {
+            color: "#000000",
+          },
+          modal: {
+            ondismiss: () => setPlacing(false),
+          }
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        const { data } = await API.post('/orders', orderData);
+        await clearCart();
+        router.push(`/profile?tab=orders&success=${data._id}`);
+        setPlacing(false);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Order failed. Please try again.');
-    } finally {
       setPlacing(false);
     }
   };
@@ -123,16 +164,16 @@ export default function CheckoutPage() {
               {savedAddresses.length > 0 && (
                 <div className="mb-8 border-b border-white/10 pb-8">
                   <div className="flex items-center justify-between mb-4">
-                     <p className="text-[10px] uppercase tracking-widest text-gray-400">Select a saved address</p>
-                     <button onClick={() => setForm({ name: user?.name || '', phone: '', street: '', city: '', state: '', pincode: '' })} className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-white underline transition-colors">Clear Selection</button>
+                    <p className="text-[10px] uppercase tracking-widest text-gray-400">Select a saved address</p>
+                    <button onClick={() => setForm({ name: user?.name || '', phone: '', street: '', city: '', state: '', pincode: '' })} className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-white underline transition-colors">Clear Selection</button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {savedAddresses.map((addr, i) => (
                       <div key={i} onClick={() => setForm(addr)}
                         className={`p-5 rounded-xl border cursor-pointer transition-colors duration-300 ${form.street === addr.street && form.pincode === addr.pincode ? 'border-white bg-white/10 shadow-lg shadow-white/5' : 'border-white/20 bg-black/20 hover:border-white/50'}`}>
                         <div className="flex items-center justify-between mb-2">
-                           <p className="font-semibold text-white tracking-wide text-sm">{addr.name}</p>
-                           {form.street === addr.street && form.pincode === addr.pincode && <span className="text-white text-xs">✓</span>}
+                          <p className="font-semibold text-white tracking-wide text-sm">{addr.name}</p>
+                          {form.street === addr.street && form.pincode === addr.pincode && <span className="text-white text-xs">✓</span>}
                         </div>
                         <p className="text-xs font-light text-gray-300 mb-1">{addr.phone}</p>
                         <p className="text-xs font-light text-gray-400 leading-relaxed">{addr.street}, {addr.city}, {addr.state} - {addr.pincode}</p>
@@ -141,26 +182,26 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               )}
-              
+
               <div className="mb-6">
-                 {savedAddresses.length > 0 && <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-5">Or enter a new address manually</p>}
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  { label: 'Full Name', name: 'name', placeholder: 'Your name' },
-                  { label: 'Phone', name: 'phone', placeholder: '+91 XXXXX XXXXX' },
-                  { label: 'Street Address', name: 'street', placeholder: 'House no, Street' },
-                  { label: 'City', name: 'city', placeholder: 'City' },
-                  { label: 'State', name: 'state', placeholder: 'State' },
-                  { label: 'Pincode', name: 'pincode', placeholder: '560001' },
-                ].map((f) => (
-                  <div key={f.name} className={f.name === 'street' ? 'sm:col-span-2' : ''}>
-                    <label className="text-[10px] uppercase tracking-widest text-gray-400 block mb-2">{f.label}</label>
-                    <input type="text" name={f.name} value={form[f.name]} onChange={handleChange}
-                      placeholder={f.placeholder}
-                      className="w-full border border-white/20 bg-black/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-white transition-colors" />
-                  </div>
-                ))}
-              </div>
+                {savedAddresses.length > 0 && <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-5">Or enter a new address manually</p>}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {[
+                    { label: 'Full Name', name: 'name', placeholder: 'Your name' },
+                    { label: 'Phone', name: 'phone', placeholder: '+91 XXXXX XXXXX' },
+                    { label: 'Street Address', name: 'street', placeholder: 'House no, Street' },
+                    { label: 'City', name: 'city', placeholder: 'City' },
+                    { label: 'State', name: 'state', placeholder: 'State' },
+                    { label: 'Pincode', name: 'pincode', placeholder: '560001' },
+                  ].map((f) => (
+                    <div key={f.name} className={f.name === 'street' ? 'sm:col-span-2' : ''}>
+                      <label className="text-[10px] uppercase tracking-widest text-gray-400 block mb-2">{f.label}</label>
+                      <input type="text" name={f.name} value={form[f.name]} onChange={handleChange}
+                        placeholder={f.placeholder}
+                        className="w-full border border-white/20 bg-black/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-white transition-colors" />
+                    </div>
+                  ))}
+                </div>
               </div>
               <button onClick={() => setStep(2)}
                 disabled={!form.name || !form.phone || !form.street || !form.city || !form.state || !form.pincode}
@@ -214,7 +255,7 @@ export default function CheckoutPage() {
                 <p className="font-semibold text-white tracking-widest uppercase text-[10px] mb-2">Payment Method:</p>
                 <p className="text-gray-300 font-light">{paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}</p>
               </div>
-              
+
               <div className="space-y-4 mb-4">
                 {cartItems.map((i) => (
                   <div key={i._id} className="flex justify-between items-center text-sm py-4 border-b border-white/10">
@@ -224,7 +265,7 @@ export default function CheckoutPage() {
                 ))}
               </div>
               {error && <p className="text-red-400 text-xs tracking-widest uppercase mb-4">{error}</p>}
-              
+
               <div className="flex flex-col-reverse sm:flex-row gap-4 mt-8">
                 <button onClick={() => setStep(2)} className="flex-1 border border-white text-white text-[10px] uppercase tracking-[0.2em] font-semibold py-4 rounded-xl hover:bg-white/10 transition-colors">
                   Go Back
@@ -250,11 +291,11 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            
+
             <div className="space-y-4 text-xs tracking-wider text-gray-400">
               <div className="flex justify-between items-center"><span className="uppercase text-[9px] tracking-widest">Subtotal</span><span className="text-white">₹{cartTotal.toLocaleString()}</span></div>
               <div className="flex justify-between items-center"><span className="uppercase text-[9px] tracking-widest">Shipping</span><span className={shipping === 0 ? 'text-white' : 'text-white'}>{shipping === 0 ? 'COMPLIMENTARY' : `₹${shipping}`}</span></div>
-              
+
               <div className="flex justify-between items-center font-playfair text-white text-lg pt-4 border-t border-white/20">
                 <span>Total</span><span>₹{total.toLocaleString()}</span>
               </div>
@@ -263,6 +304,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
     </div>
   );
 }

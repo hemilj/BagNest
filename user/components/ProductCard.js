@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
@@ -24,7 +25,32 @@ export default function ProductCard({ product }) {
 
   const handleCart = async (e) => {
     e.preventDefault();
-    if (!user) { router.push('/login'); return; }
+    if (!user) {
+      Swal.fire({
+        title: 'AUTHENTICATION REQUIRED',
+        text: "You need to login to access the cart",
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#fff',
+        cancelButtonColor: '#333',
+        confirmButtonText: 'LOGIN NOW',
+        cancelButtonText: 'LATER',
+        background: '#111',
+        color: '#fff',
+        iconColor: '#fff',
+        customClass: {
+          popup: 'glass-card border border-white/10 rounded-2xl font-jost',
+          title: 'text-sm tracking-widest',
+          confirmButton: 'text-black text-[10px] tracking-widest px-8 py-3 rounded-lg font-bold',
+          cancelButton: 'text-white text-[10px] tracking-widest px-8 py-3 rounded-lg'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/login');
+        }
+      });
+      return;
+    }
     try {
       setAdding(true);
       await addToCart(product._id, 1);
@@ -97,13 +123,12 @@ export default function ProductCard({ product }) {
           <button
             onClick={handleCart}
             disabled={adding || product.stock === 0}
-            className={`w-full py-3 text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 border rounded-lg ${
-              added
-                ? 'bg-transparent border-white text-white'
-                : product.stock === 0
+            className={`w-full py-3 text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 border rounded-lg ${added
+              ? 'bg-transparent border-white text-white'
+              : product.stock === 0
                 ? 'bg-transparent border-white/20 text-white/50 cursor-not-allowed'
                 : 'bg-white border-white text-black hover:bg-transparent hover:text-white'
-            }`}
+              }`}
           >
             {adding ? 'Adding...' : added ? 'Added' : 'Add to Cart'}
           </button>

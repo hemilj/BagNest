@@ -60,6 +60,7 @@ export default function Footer() {
                 type="email" 
                 placeholder="Enter your email" 
                 className="w-full bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 font-light" 
+                suppressHydrationWarning
               />
               <button className="text-[10px] uppercase tracking-widest text-white hover:text-gray-400 pl-4 font-semibold transition-colors">Subscribe</button>
             </div>
@@ -68,7 +69,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10 text-center text-xs tracking-widest text-gray-400 font-light py-8 px-6 uppercase flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto">
-        <span>© {new Date().getFullYear()} BagNest</span>
+        <span suppressHydrationWarning>© {new Date().getFullYear()} BagNest</span>
         <div className="flex gap-4 mt-4 md:mt-0">
           <span className="hover:text-gray-300 transition-colors cursor-pointer">Privacy Policy</span>
           <span className="hover:text-gray-300 transition-colors cursor-pointer">Terms of Service</span>

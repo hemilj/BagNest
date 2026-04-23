@@ -50,11 +50,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md glass-card rounded-3xl p-10 md:p-14 relative z-10">
         <div className="text-center mb-10">
           <Link href="/">
-             <span className="font-playfair text-white text-3xl tracking-wider block mb-6 drop-shadow-md">BagNest</span>
+            <span className="font-playfair text-white text-3xl tracking-wider block mb-6 drop-shadow-md">BagNest</span>
           </Link>
           <h1 className="font-playfair text-2xl text-white">Create Account</h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-gray-300 mt-2">Join Our Community</p>
@@ -92,6 +92,12 @@ export default function RegisterPage() {
           <p className="text-[10px] uppercase tracking-widest text-gray-400">
             Already have an account?{' '}
             <Link href="/login" className="text-white border-b border-white hover:text-gray-300 hover:border-gray-300 transition-colors pb-1">Login Here</Link>
+          </p>
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-gray-400">
+
+            <Link href="/" className="text-white border-b border-white hover:text-gray-300 hover:border-gray-300 transition-colors pb-1">Back to Home</Link>
           </p>
         </div>
       </div>

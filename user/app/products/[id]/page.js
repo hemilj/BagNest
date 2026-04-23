@@ -5,6 +5,7 @@ import API from '../../../lib/axios';
 import Loader from '../../../components/Loader';
 import { useCart } from '../../../context/CartContext';
 import { useAuth } from '../../../context/AuthContext';
+import Swal from 'sweetalert2';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
@@ -39,7 +40,32 @@ export default function ProductDetailPage() {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!user) { router.push('/login'); return; }
+    if (!user) {
+      Swal.fire({
+        title: 'AUTHENTICATION REQUIRED',
+        text: "You need to login to access the cart",
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#fff',
+        cancelButtonColor: '#333',
+        confirmButtonText: 'LOGIN NOW',
+        cancelButtonText: 'LATER',
+        background: '#111',
+        color: '#fff',
+        iconColor: '#fff',
+        customClass: {
+          popup: 'glass-card border border-white/10 rounded-2xl font-jost',
+          title: 'text-sm tracking-widest',
+          confirmButton: 'text-black text-[10px] tracking-widest px-8 py-3 rounded-lg font-bold',
+          cancelButton: 'text-white text-[10px] tracking-widest px-8 py-3 rounded-lg'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/login');
+        }
+      });
+      return;
+    }
     try {
       setAdding(true);
       await addToCart(product._id, qty);
@@ -146,7 +172,33 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <button onClick={() => { if (!user) router.push('/login'); }}
+          <button onClick={() => { 
+            if (!user) {
+              Swal.fire({
+                title: 'AUTHENTICATION REQUIRED',
+                text: "Please sign in to add items to your wishlist",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#fff',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'SIGN IN',
+                cancelButtonText: 'LATER',
+                background: '#111',
+                color: '#fff',
+                iconColor: '#fff',
+                customClass: {
+                  popup: 'glass-card border border-white/10 rounded-2xl font-jost',
+                  title: 'text-sm tracking-widest',
+                  confirmButton: 'text-black text-[10px] tracking-widest px-8 py-3 rounded-lg font-bold',
+                  cancelButton: 'text-white text-[10px] tracking-widest px-8 py-3 rounded-lg'
+                }
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  router.push('/login');
+                }
+              });
+            }
+          }}
             className="w-full border border-white/30 text-white rounded-lg text-[10px] uppercase tracking-[0.2em] h-14 hover:bg-white/10 transition-colors">
             Add to Wishlist
           </button>

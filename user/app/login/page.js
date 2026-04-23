@@ -49,12 +49,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md glass-card rounded-3xl p-10 md:p-14 relative z-10">
         {/* Header */}
         <div className="text-center mb-10">
           <Link href="/">
-             <span className="font-playfair text-white text-3xl tracking-wider block mb-6 drop-shadow-md">BagNest</span>
+            <span className="font-playfair text-white text-3xl tracking-wider block mb-6 drop-shadow-md">BagNest</span>
           </Link>
           <h1 className="font-playfair text-2xl text-white">Welcome Back</h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-gray-300 mt-2">Access your account</p>
@@ -98,6 +98,12 @@ export default function LoginPage() {
           <p className="text-[10px] uppercase tracking-widest text-gray-400">
             New to BagNest?{' '}
             <Link href="/register" className="text-white border-b border-white hover:text-gray-300 hover:border-gray-300 transition-colors pb-1">Create Account</Link>
+          </p>
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-gray-400">
+
+            <Link href="/" className="text-white border-b border-white hover:text-gray-300 hover:border-gray-300 transition-colors pb-1">Back to Home</Link>
           </p>
         </div>
 
